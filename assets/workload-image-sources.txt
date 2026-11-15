@@ -1,10 +1,10 @@
 Workload image sources
 
 The LIBERO, ALOHA and BEHAVIOR-1K images are 1600x1000 stills made for this
-website on 2026-11-13 from CollabTime policy runs. They illustrate the
+website on 2026-11-13 from LoopArch policy runs. They illustrate the
 workloads. They are not images of the Thor scheduling comparison.
 
-LIBERO: CollabTime pi0.5 run of LIBERO-Spatial task 0, initial condition 0,
+LIBERO: LoopArch pi0.5 run of LIBERO-Spatial task 0, initial condition 0,
 seed 7; the episode succeeds. The policy ran unmodified on its 256x256
 observations while the simulator state was logged after each step. The image
 is that logged state drawn again with the scene's own side-view camera (field
@@ -12,7 +12,7 @@ of view narrowed to 31 degrees) at 2560x1600 with 8x multisampling, then
 reduced. It shows the bowl held just above the plate, six steps before the
 episode ends in success.
 
-ALOHA: CollabTime pi0 run of gym-aloha AlohaTransferCube-v0, seed 18; the
+ALOHA: LoopArch pi0 run of gym-aloha AlohaTransferCube-v0, seed 18; the
 episode succeeds. The image is the last step of that episode's logged joint
 trajectory, drawn with the ALOHA 2 model from MuJoCo Menagerie because the
 gym-aloha scene defines no materials. It is not the scene the policy
@@ -52,7 +52,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-BEHAVIOR-1K: CollabTime rollout of the pi0.5 policy on turning_on_radio,
+BEHAVIOR-1K: LoopArch rollout of the pi0.5 policy on turning_on_radio,
 public test instance 0, scene house_double_floor_lower, R1Pro robot, in
 OmniGibson with no imposed delay. Third-person viewer camera at 2560x1440,
 cropped to 16:10 and reduced; the policy's own cameras are unchanged. The
