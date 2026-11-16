@@ -208,7 +208,7 @@
   <aside class="interpretation"><strong>How the model is checked</strong><p>The native co-execution tests use observed completion times instead of modeled completion times: the simulator advances at the command cadence while inference runs on Thor. That separates a measured benefit of an allocation from a prediction of the timing model. <a class="inline" href="index.html#findings">See the findings</a>.</p></aside>
 </section>
 <section id="chunks" class="section">
-  <div class="section-heading"><p class="eyebrow">06 / Action chunks</p><h2>Action execution and inference<br>run at different rates.</h2><p>System 1 produces action chunks; the robot executes one command every 66.7 ms (15 Hz). A ten-command chunk covers 667 ms of execution.</p></div>
+  <div class="section-heading"><p class="eyebrow">06 / Action chunks</p><h2>Action execution and inference<br>run at different rates.</h2><p>In our LeKiwi workload, π<sub>0.5</sub> serves as System 1 and produces action chunks. The robot executes one action command every 66.7 ms (15 Hz), so a ten-command chunk spans 667 ms of execution.</p></div>
   <div class="panel chunk-panel">
     <div id="chunk-cadence-15hz">
       <div class="chunk-controls">
