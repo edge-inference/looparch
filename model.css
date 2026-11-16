@@ -114,3 +114,27 @@ a.inline{color:var(--teal);border-bottom:1px solid currentColor}
 @media(max-width:600px){.replay .illus{margin-left:0;flex-basis:100%}.measured{grid-template-columns:repeat(2,1fr)}.measured div:nth-child(2n){border-right:0}.measured div:nth-child(-n+2){border-bottom:1px solid var(--line)}}
 @media(pointer:coarse){.replay button{min-block-size:44px}}
 .halo{paint-order:stroke;stroke:white;stroke-width:5px;stroke-linejoin:round}
+
+/* Action chunks: native controls and a timeline sized to its actual container. */
+#chunk-cadence-15hz{display:grid;gap:18px;max-width:980px;margin:auto}
+#chunk-cadence-15hz .chunk-controls{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:end}
+#chunk-cadence-15hz .chunk-control{display:grid;gap:8px;font-size:14px;color:var(--muted);min-width:0}
+#chunk-cadence-15hz .control-label{display:flex;justify-content:space-between;gap:12px}
+#chunk-cadence-15hz output{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+#chunk-cadence-15hz input[type="range"]{width:100%;min-height:44px;accent-color:var(--teal);margin:0}
+#chunk-cadence-15hz select{font-size:14px;min-height:44px;min-width:0}
+#chunk-cadence-15hz .chunk-prefetch{display:flex;gap:10px;align-items:center;font-size:14px;min-height:44px}
+#chunk-cadence-15hz input[type="checkbox"]{accent-color:var(--teal);width:18px;height:18px;flex-shrink:0}
+#chunk-cadence-15hz .chart-wrap{min-width:0}
+#chunk-cadence-15hz .chunk-timeline{display:block;width:100%;min-width:0;overflow:visible}
+#chunk-cadence-15hz .chunk-timeline text{fill:var(--ink);font:14px Arial,Helvetica,sans-serif}
+#chunk-cadence-15hz .chunk-timeline .chunk-small{font-size:12px}
+#chunk-cadence-15hz .axis{stroke:var(--line);stroke-width:1}
+#chunk-cadence-15hz .arrival{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+#chunk-cadence-15hz .queued{fill:color-mix(in srgb,var(--teal) 24%,white)}
+#chunk-cadence-15hz .incoming{fill:color-mix(in srgb,var(--blue) 28%,white)}
+#chunk-cadence-15hz .computing{fill:color-mix(in srgb,var(--blue) 18%,white)}
+#chunk-cadence-15hz .holding{fill:color-mix(in srgb,var(--orange) 22%,white)}
+#chunk-cadence-15hz .chunk-summary{margin:0;font-variant-numeric:tabular-nums}
+.chunk-scope{max-width:980px;margin:16px auto 0}
+@media(max-width:600px){#chunk-cadence-15hz .chunk-controls{grid-template-columns:1fr;gap:16px}.chunk-panel{overflow-x:visible}}

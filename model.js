@@ -341,3 +341,140 @@ async function initScheduler() {
 initBatch(); initLoop(); initSync(); initTick();
 initRules().catch(error => { $('rule-text').textContent = error.message; });
 initScheduler().catch(error => { $('sched-text').textContent = error.message; });
+
+/* Buffered action execution at 15 Hz; illustrative useful-chunk arrivals. */
+(() => {
+  const root = document.getElementById('chunk-cadence-15hz');
+  const latencyInput = root.querySelector('#cc15-latency');
+  const latencyValue = root.querySelector('#cc15-latency-value');
+  const bufferInput = root.querySelector('#cc15-buffer');
+  const prefetchInput = root.querySelector('#cc15-prefetch');
+  const svg = root.querySelector('#cc15-chart');
+  const summary = root.querySelector('#cc15-summary');
+  const NS = 'http://www.w3.org/2000/svg';
+
+  function makeModel(state) {
+    const dt = 1000 / 15;
+    const horizon = 10;
+    const q = state.buffer;
+    const latency = state.latency;
+    const tick = t => Math.ceil((t - 1e-7) / dt) * dt;
+    const aEnd = q * dt;
+    const bRequest = state.prefetch ? 0 : aEnd;
+    const bReady = bRequest + latency;
+    const bStart = Math.max(aEnd, tick(bReady));
+    const bEnd = bStart + horizon * dt;
+    const cRequest = state.prefetch ? bStart + (horizon - q) * dt : bEnd;
+    const cReady = cRequest + latency;
+    const cStart = Math.max(bEnd, tick(cReady));
+    const cEnd = cStart + horizon * dt;
+    return {
+      dt, aEnd, chunks:[
+        {id:'A',start:0,end:aEnd,count:q},
+        {id:'B',start:bStart,end:bEnd,count:horizon},
+        {id:'C',start:cStart,end:cEnd,count:horizon}
+      ],
+      inferences:[{id:'B',start:bRequest,end:bReady},{id:'C',start:cRequest,end:cReady}],
+      holds:[{start:aEnd,end:bStart},{start:bEnd,end:cStart}].filter(s=>s.end-s.start>1e-6),
+      end:cEnd, firstHold:bStart-aEnd, totalHold:(bStart-aEnd)+(cStart-bEnd)
+    };
+  }
+  // MODEL_END
+  const defaults = {latency:400,buffer:10,prefetch:true};
+  let state = {...defaults};
+  const node = (tag, attrs={}, text) => {
+    const element = document.createElementNS(NS,tag);
+    for (const [key,value] of Object.entries(attrs)) {
+      if (key === 'data-tooltip') {
+        const title = document.createElementNS(NS,'title');
+        title.textContent = value; element.appendChild(title);
+      } else element.setAttribute(key,String(value));
+    }
+    if (text !== undefined) element.textContent = text;
+    svg.appendChild(element);
+    return element;
+  };
+  const rounded = value => Math.round(value);
+  function draw() {
+    const model = makeModel(state);
+    const width = Math.max(160,root.querySelector('.chart-wrap').getBoundingClientRect().width || 736);
+    const font = parseFloat(getComputedStyle(root).fontSize) || 14;
+    const scale = font / 14;
+    const narrow = width < 520;
+    const left = 6;
+    const right = width - 24;
+    const axisEnd = model.end + model.dt*.55;
+    const x = time => left + time/axisEnd*(right-left);
+    const height = 244*scale;
+    svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+    svg.style.height = `${height}px`;
+    while(svg.lastChild) svg.removeChild(svg.lastChild);
+    node('title',{id:'cc15-chart-title'},'Inference chunks and 15 Hz command execution');
+    node('desc',{id:'cc15-chart-desc'},
+      `A is already queued. Each command lasts ${model.dt.toFixed(1)} ms. `+
+      `B inference runs from ${rounded(model.inferences[0].start)} to ${rounded(model.inferences[0].end)} ms. `+
+      `The first hold is ${rounded(model.firstHold)} ms. Total hold in this view is ${rounded(model.totalHold)} ms.`);
+    const label = (text,px,py,attrs={}) => node('text',{x:px,y:py*scale,...attrs},text);
+    label('System 1 inference',left,17);
+    for(const inf of model.inferences) {
+      const start=x(inf.start),end=x(inf.end);
+      node('rect',{x:start,y:32*scale,width:Math.max(1,end-start),height:30*scale,rx:2,class:'computing',
+        'data-tooltip':`Chunk ${inf.id}: request ${rounded(inf.start)} ms; ready ${rounded(inf.end)} ms`});
+      if(end-start>font*5.8) label(`Chunk ${inf.id}`, (start+end)/2,52,{'text-anchor':'middle'});
+      else if(end-start>font*1.2) label(inf.id,(start+end)/2,52,{'text-anchor':'middle'});
+      const labelText=narrow ? `${inf.id} ${rounded(inf.end)}` : `${inf.id} ready: ${rounded(inf.end)} ms`;
+      const anchor=narrow ? 'middle' : end > width-115 ? 'end' : 'start';
+      const halfLabel=labelText.length*4;
+      const labelX=narrow ? Math.max(left+halfLabel,Math.min(right-halfLabel,end)) : end;
+      label(labelText,labelX,83,{'text-anchor':anchor,class:'chunk-small'});
+      node('line',{x1:end,y1:62*scale,x2:end,y2:70*scale,class:'arrival'});
+    }
+    label('Execution · 66.7 ms per block',left,111);
+    for(const chunk of model.chunks) {
+      const start=x(chunk.start),end=x(chunk.end);
+      label(chunk.id,(start+end)/2,134,{'text-anchor':'middle'});
+      for(let i=0;i<chunk.count;i++) {
+        const x0=x(chunk.start+i*model.dt), x1=x(chunk.start+(i+1)*model.dt);
+        const blockWidth=Math.max(1,x1-x0-1.5);
+        node('rect',{x:x0,y:143*scale,width:blockWidth,height:32*scale,rx:1.5,
+          class:chunk.id==='A'?'queued':'incoming',
+          'data-tooltip':`${chunk.id}${i+1}: ${rounded(chunk.start+i*model.dt)}–${rounded(chunk.start+(i+1)*model.dt)} ms`});
+        if(blockWidth >= (i+1===10?1.35:.8)*font) label(String(i+1),x0+blockWidth/2,164,{'text-anchor':'middle',class:'chunk-small'});
+      }
+    }
+    for(const hold of model.holds) {
+      const start=x(hold.start),end=x(hold.end),span=end-start;
+      node('rect',{x:start,y:143*scale,width:Math.max(1,span-1.5),height:32*scale,rx:1.5,class:'holding',
+        'data-tooltip':`Hold: buffer empty for ${rounded(hold.end-hold.start)} ms`});
+      if(span>font*2.4) label('hold',(start+end)/2,164,{'text-anchor':'middle',class:'chunk-small'});
+    }
+    node('line',{x1:left,y1:192*scale,x2:right,y2:192*scale,class:'axis'});
+    const slots=Math.ceil(axisEnd/model.dt);
+    const stride=Math.max(1,Math.ceil(slots / Math.max(3,Math.floor(width/83))));
+    for(let i=0;i*model.dt<=axisEnd+1e-6;i+=stride) {
+      const px=x(i*model.dt);
+      node('line',{x1:px,y1:192*scale,x2:px,y2:197*scale,class:'axis'});
+      label(String(rounded(i*model.dt)),px,214,{'text-anchor':i===0?'start':'middle',class:'chunk-small'});
+    }
+    label('Time (ms)',width/2,239,{'text-anchor':'middle',class:'chunk-small'});
+    latencyValue.value=`${state.latency} ms`;
+    latencyValue.textContent=`${state.latency} ms`;
+    summary.textContent=`Initial buffer: ${state.buffer} commands (${rounded(model.aEnd)} ms) · `+
+      `First hold: ${rounded(model.firstHold)} ms · Total hold shown: ${rounded(model.totalHold)} ms`;
+  }
+  function syncInputs() {
+    latencyInput.value=state.latency;
+    bufferInput.value=state.buffer;
+    prefetchInput.checked=state.prefetch;
+  }
+  function changed() {
+    state={latency:Number(latencyInput.value),buffer:Number(bufferInput.value),prefetch:prefetchInput.checked};
+    draw();
+  }
+  latencyInput.addEventListener('input',changed);
+  bufferInput.addEventListener('change',changed);
+  prefetchInput.addEventListener('change',changed);
+  syncInputs();
+  draw();
+  new ResizeObserver(draw).observe(root.querySelector('.chart-wrap'));
+})();

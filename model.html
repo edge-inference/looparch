@@ -11,11 +11,11 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="masthead"><a class="wordmark" href="index.html">Loop<span>Arch</span><svg class="bot-icon humanoid-icon" viewBox="0 0 32 40" aria-hidden="true" focusable="false"><rect class="robot-shell" x="10.5" y="1.5" width="11" height="9" rx="3.5"/><rect class="robot-visor" x="12.5" y="4" width="7" height="3" rx="1.5"/><path class="robot-shell" d="M11 13h10l1 3-2 10h-8l-2-10z"/><path class="robot-chest" d="M13.5 16.5h5"/><path class="robot-limb" d="m7 14-2 7 1 5m19-12 2 7-1 5M13 29l-1 8H9m10-8 1 8h3"/><circle class="robot-joint" cx="5" cy="21" r="1.6"/><circle class="robot-joint" cx="27" cy="21" r="1.6"/><path class="robot-neck" d="M14 11.5h4"/></svg></a><nav aria-label="Main navigation"><a href="index.html">Overview</a><a href="#request">One request</a><a href="#shared">Shared server</a><a href="#loop">The loop</a><a href="#step">In step</a><a href="#scheduler">Scheduler</a></nav></header>
+<header class="masthead"><a class="wordmark" href="index.html">Loop<span>Arch</span><svg class="bot-icon humanoid-icon" viewBox="0 0 32 40" aria-hidden="true" focusable="false"><rect class="robot-shell" x="10.5" y="1.5" width="11" height="9" rx="3.5"/><rect class="robot-visor" x="12.5" y="4" width="7" height="3" rx="1.5"/><path class="robot-shell" d="M11 13h10l1 3-2 10h-8l-2-10z"/><path class="robot-chest" d="M13.5 16.5h5"/><path class="robot-limb" d="m7 14-2 7 1 5m19-12 2 7-1 5M13 29l-1 8H9m10-8 1 8h3"/><circle class="robot-joint" cx="5" cy="21" r="1.6"/><circle class="robot-joint" cx="27" cy="21" r="1.6"/><path class="robot-neck" d="M14 11.5h4"/></svg></a><nav aria-label="Main navigation"><a href="index.html">Overview</a><a href="#request">One request</a><a href="#shared">Shared server</a><a href="#loop">The loop</a><a href="#step">In step</a><a href="#chunks">Action chunks</a><a href="#scheduler">Scheduler</a></nav></header>
 <main id="main">
 <section class="page-hero">
-  <div><p class="eyebrow">Method · Timing model</p><h1>The LoopArch timing model</h1><p class="lead">For every inference request, the timing model determines when the robot can use the model output. Six interactive examples show how response latency is computed, how outputs reach the simulated robot, and how the scheduler uses latency estimates. Play each example, pause it, or step through it.</p></div>
-  <ol class="toc" aria-label="On this page"><li><a href="#request"><span>01</span>One request: ready, start, finish</a></li><li><a href="#shared"><span>02</span>Many robots on one server</a></li><li><a href="#loop"><span>03</span>The loop that couples hardware and task</a></li><li><a href="#step"><span>04</span>Why the two clocks stay in step</a></li><li><a href="#tick"><span>05</span>From a finish time to an action</a></li><li><a href="#scheduler"><span>06</span>The scheduler that holds System 2</a></li></ol>
+  <div><p class="eyebrow">Method · Timing model</p><h1>The LoopArch timing model</h1><p class="lead">For every inference request, the timing model determines when the robot can use the model output. Seven interactive examples show how response latency is computed, how outputs reach the simulated robot, and how the scheduler uses latency estimates. Play each example, pause it, or step through it.</p></div>
+  <ol class="toc" aria-label="On this page"><li><a href="#request"><span>01</span>One request: ready, start, finish</a></li><li><a href="#shared"><span>02</span>Many robots on one server</a></li><li><a href="#loop"><span>03</span>The loop that couples hardware and task</a></li><li><a href="#step"><span>04</span>Why the two clocks stay in step</a></li><li><a href="#tick"><span>05</span>From a finish time to an action</a></li><li><a href="#chunks"><span>06</span>Action execution and inference chunks</a></li><li><a href="#scheduler"><span>07</span>The scheduler that holds System 2</a></li></ol>
 </section>
 
 <section id="request" class="section">
@@ -207,8 +207,41 @@
   </div>
   <aside class="interpretation"><strong>How the model is checked</strong><p>The native co-execution tests use observed completion times instead of modeled completion times: the simulator advances at the command cadence while inference runs on Thor. That separates a measured benefit of an allocation from a prediction of the timing model. <a class="inline" href="index.html#findings">See the findings</a>.</p></aside>
 </section>
+<section id="chunks" class="section">
+  <div class="section-heading"><p class="eyebrow">06 / Action chunks</p><h2>Action execution and inference<br>run at different rates.</h2><p>System 1 produces action chunks; the robot executes one command every 66.7 ms (15 Hz). A ten-command chunk covers 667 ms of execution.</p></div>
+  <div class="panel chunk-panel">
+    <div id="chunk-cadence-15hz">
+      <div class="chunk-controls">
+        <label class="chunk-control" for="cc15-latency">
+          <span class="control-label"><span>Response latency</span><output id="cc15-latency-value">400 ms</output></span>
+          <input id="cc15-latency" type="range" min="0" max="1200" step="50" value="400">
+        </label>
+        <label class="chunk-control" for="cc15-buffer">Initially queued commands
+          <select id="cc15-buffer">
+            <option value="10">10 commands · 667 ms</option>
+            <option value="5">5 commands · 333 ms</option>
+            <option value="2">2 commands · 133 ms</option>
+            <option value="1">1 command · 67 ms</option>
+          </select>
+        </label>
+      </div>
+      <label class="chunk-prefetch">
+        <input id="cc15-prefetch" type="checkbox" checked>
+        <span>Request the next chunk before the buffer empties</span>
+      </label>
+      <div class="chart-wrap">
+        <svg id="cc15-chart" class="chunk-timeline" role="img" aria-labelledby="cc15-chart-title cc15-chart-desc">
+          <title id="cc15-chart-title">Inference chunks and command execution on the same time axis</title>
+          <desc id="cc15-chart-desc">Chunk A is already available at time zero. Each execution block lasts 66.7 milliseconds. Inference produces chunks B and C. Late arrivals create hold intervals.</desc>
+        </svg>
+      </div>
+      <div id="cc15-summary" class="note chunk-summary" aria-live="polite"></div>
+    </div>
+    <p class="note chunk-scope">Illustrative example, not a measured run. Chunk A is already queued at time zero. Incoming chunks supply useful, correctly aligned commands; actual clients may discard stale commands.</p>
+  </div>
+</section>
 <section id="scheduler" class="section">
-  <div class="section-heading"><p class="eyebrow">06 / Scheduler</p><h2>Hold System 2 only<br>as long as needed.</h2><p>On one module the two models share a GPU. For each action inference the scheduler decides whether System 2 must wait, and for how long.</p></div>
+  <div class="section-heading"><p class="eyebrow">07 / Scheduler</p><h2>Hold System 2 only<br>as long as needed.</h2><p>On one module the two models share a GPU. For each action inference the scheduler decides whether System 2 must wait, and for how long.</p></div>
   <div class="explain">
     <div class="prose">
       <p><strong>Estimate.</strong> The scheduler keeps two running estimates of the action latency: with System 2 free, and with System 2 held.</p>
