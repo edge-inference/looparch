@@ -196,12 +196,13 @@
         <button type="button" data-hz="30" aria-pressed="false">30 Hz</button>
         <button type="button" data-hz="60" aria-pressed="false">60 Hz</button>
       </div>
-      <label class="slider" for="finish"><span>Modeled completion time</span><input id="finish" type="range" min="0" max="400" step="1" value="137"><output id="finish-out" for="finish">137 ms</output></label>
-      <svg id="tick-svg" viewBox="0 0 640 118" role="img" aria-labelledby="tick-title"><title id="tick-title">A time axis with control ticks. Modeled inference completes between two ticks; the output is applied at the next one.</title>
+      <label class="slider" for="finish"><span>Response latency</span><input id="finish" type="range" min="0" max="400" step="1" value="137"><output id="finish-out" for="finish">137 ms</output></label>
+      <svg id="tick-svg" viewBox="0 0 640 118" role="img" aria-labelledby="tick-title"><title id="tick-title">A request starts at 0 ms. Its response arrives between control ticks; the output is applied at the next one.</title>
         <line class="d-axis" x1="40" y1="62" x2="600" y2="62"/><g id="tick-marks"></g>
         <text class="d-lab" x="40" y="104" text-anchor="middle">0</text><text class="d-lab" x="600" y="104" text-anchor="middle">400 ms</text>
       </svg>
-      <p class="readout" aria-live="polite"><strong id="tick-ms">150 ms</strong><span id="tick-text">applied, 13 ms after modeled completion</span></p>
+      <p class="readout" aria-live="polite"><strong id="tick-ms">150 ms</strong><span id="tick-text">applied, 13 ms after the response arrives</span></p>
+      <p class="note">Illustrative timing-model estimate. The request starts at 0 ms; response latency includes queuing and inference. Waiting for the next control tick is shown separately.</p>
     </div>
   </div>
   <aside class="interpretation"><strong>How the model is checked</strong><p>The native co-execution tests use observed completion times instead of modeled completion times: the simulator advances at the command cadence while inference runs on Thor. That separates a measured benefit of an allocation from a prediction of the timing model. <a class="inline" href="index.html#findings">See the findings</a>.</p></aside>

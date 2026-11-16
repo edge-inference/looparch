@@ -223,12 +223,12 @@ function initTick() {
     for (let k = 0; k * 1000 / hz <= 400 + 1e-9; k++) marks.append(el('line', {class: 'd-axis', x1: x(k * 1000 / hz), y1: 54, x2: x(k * 1000 / hz), y2: 70}));
     marks.append(el('line', {x1: x(finish), y1: 62, x2: x(applied), y2: 62, stroke: 'var(--teal)', 'stroke-width': 3}),
       el('circle', {cx: x(finish), cy: 62, r: 6, fill: 'var(--orange)'}), el('circle', {cx: x(applied), cy: 62, r: 6, fill: 'var(--teal)'}),
-      el('text', {class: 'd-lab', x: Math.min(Math.max(x(finish), 70), 570), y: 38, 'text-anchor': 'middle'}, 'inference complete'),
+      el('text', {class: 'd-lab', x: Math.min(Math.max(x(finish), 70), 570), y: 38, 'text-anchor': 'middle'}, 'response arrives'),
       el('text', {class: 'd-strong', x: Math.min(Math.max(x(applied), 70), 570), y: 92, 'text-anchor': 'middle'}, 'applied'));
     const wait = Math.round(applied - finish);
     $('tick-ms').textContent = `${Math.round(applied)} ms`;
-    $('tick-text').textContent = wait === 0 ? 'applied immediately: modeled completion coincides with a control tick' : `applied, ${wait} ms after modeled completion`;
-    $('tick-title').textContent = `Control ticks every ${Math.round(1000 / hz)} milliseconds. Modeled inference completes at ${finish} milliseconds and the output is applied at ${Math.round(applied)} milliseconds.`;
+    $('tick-text').textContent = wait === 0 ? 'applied immediately: the response arrives on a control tick' : `applied, ${wait} ms after the response arrives`;
+    $('tick-title').textContent = `Control ticks every ${Math.round(1000 / hz)} milliseconds. The request starts at 0 milliseconds, its response latency is ${finish} milliseconds, and the output is applied at ${Math.round(applied)} milliseconds.`;
   }
   group.addEventListener('click', event => {
     const button = event.target.closest('button'); if (!button) return;
